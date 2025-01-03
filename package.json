@@ -4,31 +4,25 @@
     "description": "nodejs vless",
     "main": "index.js",
     "scripts": {
-        "dev": "node --env-file=.env.local --import tsx src/index.ts",
-        "start": "node --env-file=.env --import tsx src/index.ts"
+        "dev": "node --env-file=.env.local app.js"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/BanKnight/nvless.git"
+        "url": "git+https://github.com/suzukua/nvless.git"
     },
     "keywords": [
         "node",
         "vless",
         "proxy"
     ],
-    "author": "banknight",
+    "author": "suzukua",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/BanKnight/nvless/issues"
+        "url": "https://github.com/suzukua/nvless/issues"
     },
-    "homepage": "https://github.com/BanKnight/nvless#readme",
+    "homepage": "https://github.com/suzukua/nvless#readme",
     "dependencies": {
         "tsx": "^4.7.0",
         "ws": "^8.16.0"
-    },
-    "devDependencies": {
-        "@types/node": "^20.10.6",
-        "@types/ws": "^8.5.10",
-        "typescript": "^5.3.3"
     }
 }
