@@ -1,6 +1,6 @@
 ## nvless
 
-一个用typescript实现的只使用ws链接的vless协议服务端。
+一个用typescript实现的只使用ws链接的vless协议服务端，支持0-RTT
 
 ### 为什么重复造轮子
 
