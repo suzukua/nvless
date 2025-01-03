@@ -1,15 +1,16 @@
-import { stringify, v5, validate } from "uuid"
 import { WebSocket, createWebSocketStream, WebSocketServer } from "ws";
 import { createConnection } from "net";
 import { RemoteInfo, createSocket } from "dgram";
-
-import { readAddress, readMetaAddress, writeMetaAddress } from "./utils";
+import { readAddress, readMetaAddress, base64ToBuffer, stringify } from "./utils";
 import { Dest, MuxSession, NameProtocols } from "./types";
 import { finished } from "stream";
 
 const PORT = parseInt(process.env.PORT ?? "3000")
-const UUID = validate(process.env.UUID ?? "") ?
-    process.env.UUID : v5(process.env.UUID ?? "inputyouruuid", Buffer.alloc(16))
+if (!process.env.UUID){
+    console.error("请设置UUID")
+    process.exit(-1);
+}
+const UUID = process.env.UUID
 
 const WSPATH = process.env.WSPATH ?? ""
 
@@ -60,6 +61,18 @@ wss.on("connection", (socket: WebSocket) => {
             session?.close?.()
         }
     })
+    // 处理 WebSocket 0-RTT（零往返时间）的早期数据
+    // 0-RTT 允许在完全建立连接之前发送数据，提高了效率
+    const { earlyData, error } = base64ToBuffer(socket.protocol);
+    if (error) {
+        // 如果解码早期数据时出错，将错误传递给控制器
+        console.error(error);
+    } else if (earlyData) {
+        console.log(`处理早期数据(0RTT)Size: ${earlyData.byteLength}`);
+        // 如果有早期数据，将其加入流的队列中
+        socket.pendings.push(earlyData);
+        socket.next()
+    }
 })
 
 setInterval(() => {

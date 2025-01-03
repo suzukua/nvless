@@ -91,3 +91,52 @@ export function writeAddress(meta: Buffer, dest: Dest, offset: number) {
 
     return offset
 }
+
+const byteToHex: string[] = [];
+
+for (let i = 0; i < 256; ++i) {
+    byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+
+export function stringify(arr: Buffer, offset = 0) {
+    // Note: Be careful editing this code!  It's been tuned for performance
+    // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+    // @ts-ignore
+    return byteToHex[arr[offset]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
+}
+
+
+/**
+ * 将 Base64 编码的字符串转换为 ArrayBuffer
+ *
+ * @param {string} base64Str Base64 编码的输入字符串
+ * @returns {{ earlyData: Buffer | undefined, error: Error | null }} 返回解码后的 ArrayBuffer 或错误
+ */
+export function base64ToBuffer(base64Str: any) {
+    // 如果输入为空，直接返回空结果
+    if (!base64Str) {
+        return { error: null };
+    }
+    try {
+        // Go 语言使用了 URL 安全的 Base64 变体（RFC 4648）
+        // 这种变体使用 '-' 和 '_' 来代替标准 Base64 中的 '+' 和 '/'
+        // JavaScript 的 atob 函数不直接支持这种变体，所以我们需要先转换
+        base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+
+        // 使用 atob 函数解码 Base64 字符串
+        // atob 将 Base64 编码的 ASCII 字符串转换为原始的二进制字符串
+        const decode = atob(base64Str);
+
+        // 将二进制字符串转换为 Uint8Array
+        // 这是通过遍历字符串中的每个字符并获取其 Unicode 编码值（0-255）来完成的
+        const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
+        const buffer = Buffer.from(arryBuffer);
+
+        // 返回 Uint8Array 的底层 ArrayBuffer
+        // 这是实际的二进制数据，可以用于网络传输或其他二进制操作
+        return { earlyData: buffer, error: null };
+    } catch (error) {
+        // 如果在任何步骤中出现错误（如非法 Base64 字符），则返回错误
+        return { error };
+    }
+}
