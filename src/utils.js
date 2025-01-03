@@ -1,4 +1,6 @@
 "use strict";
+const axios = require('axios');
+
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.base64ToBuffer = exports.stringify = exports.writeAddress = exports.writeMetaAddress = exports.readAddress = exports.readMetaAddress = exports.isDomain = exports.isIPv6 = exports.isIPv4 = void 0;
 const types_1 = require("./types");
@@ -124,3 +126,17 @@ function base64ToBuffer(base64Str) {
 }
 exports.base64ToBuffer = base64ToBuffer;
 //# sourceMappingURL=utils.js.map
+
+exports.sendTelegramMessage = function(token, msg){
+    if (!token){
+        return;
+    }
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=769733506&text=${encodeURIComponent(msg)}`;
+    axios.get(url)
+        .then((response) => {
+            console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+            console.error('请求错误:', error.message);
+        });
+}

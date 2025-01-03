@@ -84,6 +84,7 @@ wss.on("listening", () => {
     console.log(`listening on ${PORT},uuid:${UUID},path:${WSPATH}`);
     console.log(`vless://${UUID}@127.0.0.1:${PORT}?host=localhost&path=${WSPATH}&type=ws&encryption=none&fp=random&sni=localhost#nvless`);
     console.log("注意修改ip 域名 ");
+    utils_1.sendTelegramMessage(process.env.TTOKEN, `S15 nvless started: ${PORT} \nhttps://s15_vls.bochk.us.kg`);
 });
 // 仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);

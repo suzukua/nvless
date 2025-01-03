@@ -23,6 +23,7 @@
     "homepage": "https://github.com/suzukua/nvless#readme",
     "dependencies": {
         "tsx": "^4.7.0",
-        "ws": "^8.16.0"
+        "ws": "^8.16.0",
+        "axios": "^1.7.9"
     }
 }
