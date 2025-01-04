@@ -84,9 +84,9 @@ wss.on("listening", () => {
     console.log(`listening on ${PORT},uuid:${UUID},path:${WSPATH}`);
     console.log(`vless://${UUID}@127.0.0.1:${PORT}?host=localhost&path=${WSPATH}&type=ws&encryption=none&fp=random&sni=localhost#nvless`);
     console.log("注意修改ip 域名 ");
-    utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15 告警\n\nvless服务发生重启`);
+    utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15 告警\nvless服务发生重启\naddress: ${wss.address()}`);
 });
-// 仅在发送的时候才用到的buffer
+///仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);
 const BUFFER_LEN_RESERVE = Buffer.allocUnsafe(2);
 const BUFFER_SUCCESS_RESP = Buffer.from([0, 0]);
