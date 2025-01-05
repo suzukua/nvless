@@ -28,7 +28,8 @@ const wss = new ws_1.WebSocketServer({ port: PORT, host: "0.0.0.0", path: WSPATH
 let connecting = 0;
 let lastConnecting = 0;
 
-wss.on("listening", () => {
+//on, passenger会call两次
+wss.once("listening", () => {
     console.log(`listening on ${wss.address()},uuid:${UUID},path:${WSPATH}`);
     utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${wss.address()}`);
 });
