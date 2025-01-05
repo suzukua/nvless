@@ -11,7 +11,7 @@ const utils_1 = require("./src/utils");
 const types_1 = require("./src/types");
 const stream_1 = require("stream");
 
-const PORT = parseInt(process.env.PORT ?? "3000");
+let PORT = parseInt(process.env.PORT ?? "3000");
 if (typeof(PhusionPassenger) !== 'undefined') {
     PORT = 'passenger';
 } 
