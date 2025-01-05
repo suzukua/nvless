@@ -1,4 +1,8 @@
 "use strict";
+// ADDED!!!
+if (typeof(PhusionPassenger) !== 'undefined') {
+    PhusionPassenger.configure({ autoInstall: false });
+}
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = require("ws");
 const net_1 = require("net");
@@ -8,6 +12,9 @@ const types_1 = require("./src/types");
 const stream_1 = require("stream");
 
 const PORT = parseInt(process.env.PORT ?? "3000");
+if (typeof(PhusionPassenger) !== 'undefined') {
+    PORT = 'passenger';
+} 
 
 if (!process.env.UUID) {
     console.error("请设置UUID");
