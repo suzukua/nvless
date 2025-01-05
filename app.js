@@ -20,6 +20,11 @@ const sessions = {};
 const wss = new ws_1.WebSocketServer({ port: PORT, host: "0.0.0.0", path: WSPATH });
 let connecting = 0;
 let lastConnecting = 0;
+
+wss.on("listening", () => {
+    console.log(`listening on ${wss.address()},uuid:${UUID},path:${WSPATH}`);
+    utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${wss.address()}`);
+});
 wss.on("connection", (socket) => {
     connecting++;
     socket.id = idHelper++;
@@ -79,12 +84,6 @@ wss.on('error', (e) => {
     // if (proxy.server.force) {
     //     return
     // }
-});
-wss.on("listening", () => {
-    console.log(`listening on ${PORT},uuid:${UUID},path:${WSPATH}`);
-    console.log(`vless://${UUID}@127.0.0.1:${PORT}?host=localhost&path=${WSPATH}&type=ws&encryption=none&fp=random&sni=localhost#nvless`);
-    console.log("注意修改ip 域名 ");
-    utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15 告警\nvless服务发生重启\naddress: ${wss.address()}`);
 });
 ///仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);
