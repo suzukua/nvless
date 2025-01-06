@@ -134,7 +134,7 @@ exports.sendTelegramMessage = function(token, msg){
     const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=769733506&text=${encodeURIComponent(msg)}`;
     axios.get(url)
         .then((response) => {
-            console.log(JSON.stringify(response.data));
+            // console.log(JSON.stringify(response.data));
         })
         .catch((error) => {
             console.error('请求错误:', error.message);

@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ws_1 = require("ws");
-const net_1 = require("net");
-const dgram_1 = require("dgram");
-const utils_1 = require("./src/utils");
-const types_1 = require("./src/types");
+const http = require('http');
+const express = require('express');
+const ws = require("ws");
+const net = require("net");
+const dgram = require("dgram");
+const utils = require("./src/utils");
+const types = require("./src/types");
 const stream_1 = require("stream");
+const app = express();
+const server = http.createServer(app)
 
 const PORT = parseInt(process.env.PORT ?? "3000");
 if (!process.env.UUID) {
@@ -14,17 +18,32 @@ if (!process.env.UUID) {
 }
 const UUID = process.env.UUID;
 const WSPATH = process.env.WSPATH ?? "";
-let idHelper = 1;
-const sessions = {};
-const wss = new ws_1.WebSocketServer({ port: PORT, host: "0.0.0.0", path: WSPATH });
-let connecting = 0;
-let lastConnecting = 0;
+
+const wss = new ws.WebSocketServer({ server });
+
+app.use('/*', function (req, res) {
+    res.send({ result: 'OK', message: 'Session updated' });
+});
+
+server.listen(PORT, () => {
+    let address = JSON.stringify(wss.address());
+    console.log(`Server is running on port ${address}`);
+    console.log(`websocket listening on ${address},uuid:${UUID},path:${WSPATH}`);
+    utils.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${address}`);
+});
 
 //on, passenger会call两次
-wss.once("listening", () => {
-    console.log(`listening on ${wss.address()},uuid:${UUID},path:${WSPATH}`);
-    utils_1.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${wss.address()}`);
-});
+// wss.once("listening", () => {
+//     let address = JSON.stringify(wss.address());
+//     console.log(`listening on ${address},uuid:${UUID},path:${WSPATH}`);
+//     utils.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${address}`);
+// });
+
+let connecting = 0;
+let lastConnecting = 0;
+let idHelper = 1;
+const sessions = {};
+
 wss.on("connection", (socket) => {
     connecting++;
     socket.id = idHelper++;
@@ -57,7 +76,7 @@ wss.on("connection", (socket) => {
     });
     // 处理 WebSocket 0-RTT（零往返时间）的早期数据
     // 0-RTT 允许在完全建立连接之前发送数据，提高了效率
-    const { earlyData, error } = (0, utils_1.base64ToBuffer)(socket.protocol);
+    const { earlyData, error } = (0, utils.base64ToBuffer)(socket.protocol);
     if (error) {
         // 如果解码早期数据时出错，将错误传递给控制器
         console.error(error);
@@ -69,6 +88,8 @@ wss.on("connection", (socket) => {
         socket.next();
     }
 });
+
+
 setInterval(() => {
     if (connecting != lastConnecting) {
         console.log("Connections alive:", connecting);
@@ -96,12 +117,12 @@ function head(socket) {
     }
     let offset = 0;
     const version = buffer[offset++];
-    const userid = (0, utils_1.stringify)(buffer.subarray(offset, offset += 16)); //1,17
+    const userid = (0, utils.stringify)(buffer.subarray(offset, offset += 16)); //1,17
     const optLength = buffer[offset++]; //17
     const optBuffer = buffer.subarray(offset, offset += optLength);
     const cmd = buffer[offset++]; //18+optLength
     //@ts-ignore
-    let protocol = types_1.NameProtocols[cmd];
+    let protocol = types.NameProtocols[cmd];
     if (protocol == null) {
         console.error("unsupported type:", cmd);
         socket.close();
@@ -130,7 +151,7 @@ function head(socket) {
         port: buffer.readUint16BE(offset),
     };
     offset += 2;
-    offset = (0, utils_1.readAddress)(buffer, dest, offset);
+    offset = (0, utils.readAddress)(buffer, dest, offset);
     if (!dest.host || dest.host.length == 0 || !dest.port) {
         console.error("invalid  addressType:", dest.host, dest.port);
         socket.close();
@@ -183,13 +204,13 @@ function auth(_, uuid) {
 }
 function tcp(socket, dest, head) {
     // console.log("connect to tcp", dest.host, dest.port)
-    const next = (0, net_1.createConnection)({ host: dest.host, port: dest.port }, () => {
+    const next = (0, net.createConnection)({ host: dest.host, port: dest.port }, () => {
         console.log("tcp connected", socket.id, dest.host, dest.port);
     });
     next.setKeepAlive(true);
     next.setNoDelay(true);
     next.setTimeout(3000);
-    const stream = (0, ws_1.createWebSocketStream)(socket, {
+    const stream = (0, ws.createWebSocketStream)(socket, {
         allowHalfOpen: false, //可读端end的时候，调用可写端.end()了
         autoDestroy: true,
         emitClose: true,
@@ -207,7 +228,7 @@ function tcp(socket, dest, head) {
         next.destroySoon();
     });
     const destroy = () => {
-        if (socket.readyState === ws_1.WebSocket.OPEN) {
+        if (socket.readyState === ws.WebSocket.OPEN) {
             socket.close();
         }
         if (!next.destroyed) {
@@ -223,7 +244,7 @@ function udp(socket, dest, head) {
         waiting.pendings.push(head);
     }
     let connected = false;
-    const target = (0, dgram_1.createSocket)("udp4");
+    const target = (0, dgram.createSocket)("udp4");
     function flushTarget() {
         const buffer = fetch(waiting, 3);
         if (buffer == null) {
@@ -263,7 +284,7 @@ function udp(socket, dest, head) {
     });
     target.once("close", () => {
         connected = false;
-        if (socket.readyState === ws_1.WebSocket.OPEN) {
+        if (socket.readyState === ws.WebSocket.OPEN) {
             socket.close();
         }
     });
@@ -343,7 +364,7 @@ function muxDispatch(socket, meta, extra) {
     }
 }
 function muxNew(socket, uid, meta, extra) {
-    const dest = (0, utils_1.readMetaAddress)(meta);
+    const dest = (0, utils.readMetaAddress)(meta);
     const id = `${socket.id}/${uid}`;
     if (!dest.host || dest.port === 0) {
         sendClientEnd(socket, meta);
@@ -373,7 +394,7 @@ function muxNew(socket, uid, meta, extra) {
     }
 }
 function muxNewTcp(socket, session, meta) {
-    const target = (0, net_1.createConnection)({ host: session.dest.host, port: session.dest.port }, () => {
+    const target = (0, net.createConnection)({ host: session.dest.host, port: session.dest.port }, () => {
         console.log("mux tcp connected", session.id, session.dest.host, session.dest.port);
     });
     target.setKeepAlive(true);
@@ -410,7 +431,7 @@ function muxNewTcp(socket, session, meta) {
 function muxNewUdp(socket, session, meta) {
     let alreadyClose = false;
     let last = Date.now();
-    const target = (0, dgram_1.createSocket)("udp4");
+    const target = (0, dgram.createSocket)("udp4");
     target.bind();
     target.on("message", (data, rinfo) => {
         last = Date.now();
@@ -481,7 +502,7 @@ function muxKeepAlive(socket, session, meta, extra) {
     console.log("mux keepAlive", id);
 }
 function sendClientTcpKeep(socket, originMeta, extra) {
-    if (socket.readyState !== ws_1.WebSocket.OPEN) {
+    if (socket.readyState !== ws.WebSocket.OPEN) {
         return;
     }
     const meta = originMeta.subarray(0, 4);
@@ -500,7 +521,7 @@ function sendClientTcpKeep(socket, originMeta, extra) {
     }
 }
 function sendClientUdpKeep(socket, originMeta, rinfo, extra) {
-    if (socket.readyState !== ws_1.WebSocket.OPEN) {
+    if (socket.readyState !== ws.WebSocket.OPEN) {
         return;
     }
     const preparedMeta = BUFFER_META_RESERVE;
@@ -541,7 +562,7 @@ function sendClientMuxData(socket, meta, data) {
     socket.send(data);
 }
 function sendClientEnd(socket, originMeta) {
-    if (socket.readyState !== ws_1.WebSocket.OPEN) {
+    if (socket.readyState !== ws.WebSocket.OPEN) {
         return;
     }
     // console.log("😢 send mux end", id)
