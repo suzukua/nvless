@@ -89,13 +89,6 @@ wss.on("connection", (socket) => {
     }
 });
 
-
-setInterval(() => {
-    if (connecting != lastConnecting) {
-        console.log("Connections alive:", connecting);
-    }
-    lastConnecting = connecting;
-}, 5000);
 wss.on('error', (e) => {
     if (e.code == 'EADDRINUSE') {
         console.error(e);
@@ -106,6 +99,14 @@ wss.on('error', (e) => {
     //     return
     // }
 });
+
+setInterval(() => {
+    if (connecting !== lastConnecting) {
+        console.log(`Connections Alive: ${connecting}, Total Request: ${idHelper}`);
+    }
+    lastConnecting = connecting;
+}, 1000);
+
 ///仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);
 const BUFFER_LEN_RESERVE = Buffer.allocUnsafe(2);

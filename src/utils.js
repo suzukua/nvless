@@ -10,6 +10,30 @@ const isIPv6 = (address) => /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(addr
 exports.isIPv6 = isIPv6;
 const isDomain = (address) => /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9])*$/.test(address);
 exports.isDomain = isDomain;
+
+function getTimestamp() {
+    const now = Date.now();
+    const date = new Date(now);
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+        `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${date.getMilliseconds()}`;
+}
+
+function pad(n) {
+    return n < 10 ? '0' + n : n;
+}
+
+// 重写 console.log
+const originalLog = console.log;
+console.log = (...args) => {
+    originalLog(`[${getTimestamp()}] [LOG]:`, ...args);
+};
+
+// 重写 console.error
+const originalError = console.error;
+console.error = (...args) => {
+    originalError(`[${getTimestamp()}] [ERROR]:`, ...args);
+};
+
 function readMetaAddress(meta, offset = 4) {
     //@ts-ignore
     const dest = {};
