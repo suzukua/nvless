@@ -105,7 +105,7 @@ setInterval(() => {
         console.log(`Connections Alive: ${connecting}, Total Request: ${idHelper}`);
     }
     lastConnecting = connecting;
-}, 1000);
+}, 10000);
 
 ///仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);
