@@ -22,7 +22,7 @@ const WSPATH = process.env.WSPATH ?? "";
 const wss = new ws.WebSocketServer({ server });
 
 app.use('/*', function (req, res) {
-    res.send({ result: 'OK', message: 'Session updated' });
+    res.send({ result: 'OK', message: `Connections Alive: ${connecting}, Total Request: ${idHelper}`});
 });
 
 server.listen(PORT, () => {
@@ -40,7 +40,6 @@ server.listen(PORT, () => {
 // });
 
 let connecting = 0;
-let lastConnecting = 0;
 let idHelper = 1;
 const sessions = {};
 
@@ -100,12 +99,6 @@ wss.on('error', (e) => {
     // }
 });
 
-setInterval(() => {
-    if (connecting !== lastConnecting) {
-        console.log(`Connections Alive: ${connecting}, Total Request: ${idHelper}`);
-    }
-    lastConnecting = connecting;
-}, 10000);
 
 ///仅在发送的时候才用到的buffer
 const BUFFER_META_RESERVE = Buffer.allocUnsafe(64);
