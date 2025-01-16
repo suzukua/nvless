@@ -8,6 +8,7 @@ const dgram = require("dgram");
 const utils = require("./src/utils");
 const types = require("./src/types");
 const stream_1 = require("stream");
+const os = require("os");
 const app = express();
 const server = http.createServer(app)
 
@@ -29,7 +30,7 @@ server.listen(PORT, () => {
     let address = JSON.stringify(wss.address());
     console.log(`Server is running on port ${address}`);
     console.log(`websocket listening on ${address},uuid:${UUID},path:${WSPATH}`);
-    utils.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${address}`);
+    utils.sendTelegramMessage(process.env.TTOKEN, `#${os.hostname()} 告警\nvless服务发生重启\naddress: ${address}`);
 });
 
 //on, passenger会call两次
