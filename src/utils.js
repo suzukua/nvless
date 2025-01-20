@@ -3,7 +3,7 @@ const axios = require('axios');
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.base64ToBuffer = exports.stringify = exports.writeAddress = exports.writeMetaAddress = exports.readAddress = exports.readMetaAddress = exports.isDomain = exports.isIPv6 = exports.isIPv4 = void 0;
-const types_1 = require("./types");
+const types = require("./types");
 const isIPv4 = (address) => /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(address);
 exports.isIPv4 = isIPv4;
 const isIPv6 = (address) => /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(address);
@@ -37,7 +37,7 @@ console.error = (...args) => {
 function readMetaAddress(meta, offset = 4) {
     //@ts-ignore
     const dest = {};
-    dest.protocol = types_1.NameProtocols[meta.readUint8(offset++)];
+    dest.protocol = types.NameProtocols[meta.readUint8(offset++)];
     dest.port = meta.readUInt16BE(offset);
     offset += 2;
     readAddress(meta, dest, offset);
@@ -73,7 +73,7 @@ function readAddress(meta, dest, offset) {
 }
 exports.readAddress = readAddress;
 function writeMetaAddress(meta, dest, offset) {
-    offset = meta.writeUint8(types_1.Protocols[dest.protocol], offset);
+    offset = meta.writeUint8(types.Protocols[dest.protocol], offset);
     offset = meta.writeUInt16BE(dest.port, offset);
     return writeAddress(meta, dest, offset);
 }

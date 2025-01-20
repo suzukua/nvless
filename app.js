@@ -7,8 +7,9 @@ const net = require("net");
 const dgram = require("dgram");
 const utils = require("./src/utils");
 const types = require("./src/types");
-const stream_1 = require("stream");
+const stream = require("stream");
 const os = require("os");
+
 const app = express();
 const server = http.createServer(app)
 
@@ -205,7 +206,7 @@ function tcp(socket, dest, head) {
     next.setKeepAlive(true);
     next.setNoDelay(true);
     next.setTimeout(3000);
-    const stream = (0, ws.createWebSocketStream)(socket, {
+    const clientStream = (0, ws.createWebSocketStream)(socket, {
         allowHalfOpen: false, //可读端end的时候，调用可写端.end()了
         autoDestroy: true,
         emitClose: true,
@@ -215,9 +216,9 @@ function tcp(socket, dest, head) {
     if (head.length > 0) {
         // console.log("send head", socket.id, dest.host, dest.port)
         // console.log(head.toString("utf8"))
-        stream.unshift(head);
+        clientStream.unshift(head);
     }
-    stream.pipe(next).pipe(stream);
+    clientStream.pipe(next).pipe(clientStream);
     next.on("error", (error) => {
         console.error(socket.id, dest.host, dest.port, error);
         next.destroySoon();
@@ -230,8 +231,8 @@ function tcp(socket, dest, head) {
             next.destroy();
         }
     };
-    (0, stream_1.finished)(next, destroy);
-    (0, stream_1.finished)(stream, destroy);
+    (0, stream.finished)(next, destroy);
+    (0, stream.finished)(clientStream, destroy);
 }
 function udp(socket, dest, head) {
     const waiting = { pendings: [] };
