@@ -11,6 +11,7 @@ const stream = require("stream");
 const os = require("os");
 
 const app = express();
+app.disable('x-powered-by');
 const server = http.createServer(app)
 
 const PORT = parseInt(process.env.PORT ?? "3000");
