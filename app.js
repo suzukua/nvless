@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const http = require('http');
+const https = require('https');
 const express = require('express');
 const ws = require("ws");
 const net = require("net");
@@ -23,6 +24,24 @@ const UUID = process.env.UUID;
 const WSPATH = process.env.WSPATH ?? "";
 
 const wss = new ws.WebSocketServer({ server });
+
+app.get('/fetch', (req, res) => {
+    const { url } = req.query;
+    if (!url) {
+        return res.status(400).json({ error: 'Missing url parameter' });
+    }
+    try {
+        const client = url.startsWith('https') ? https : http;
+        client.get(url, (response) => {
+            res.writeHead(response.statusCode, response.headers);
+            response.pipe(res);
+        }).on('error', (error) => {
+            res.status(500).json({ error: 'Failed to fetch the URL', details: error.message });
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Unexpected error', details: error.message });
+    }
+});
 
 app.use('/*', function (req, res) {
     res.send({ result: 'OK', message: `Connections Alive: ${connecting}, Total Request: ${idHelper}`});
