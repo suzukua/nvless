@@ -26,7 +26,7 @@ const WSPATH = process.env.WSPATH ?? "";
 const wss = new ws.WebSocketServer({ server });
 
 app.get('/fetch', (req, res) => {
-    const { url } = req.query;
+    const url = req.query.url;
     if (!url) {
         return res.status(400).json({ error: 'Missing url parameter' });
     }
