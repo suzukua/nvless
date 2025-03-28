@@ -27,6 +27,7 @@ const wss = new ws.WebSocketServer({ server });
 
 app.get('/fetch', (req, res) => {
     const url = req.query.url;
+    console.log(`url: ${url}`);
     if (!url) {
         return res.status(400).json({ error: 'Missing url parameter' });
     }
