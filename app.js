@@ -11,9 +11,62 @@ const types = require("./src/types");
 const stream = require("stream");
 const os = require("os");
 
+const sslOptions = {
+    key: `-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDOUhXInxuF+BlR
+5mY/p/Ml2zWRG4ThlV284ua7a+dMdeSuTXVG+XIsp8SSYzv/DK7IGfYUs/dKJOKT
+kiSdA3V8jhQOJ1tVRncljOBK947XBVUpaIfcxrD3GrGKBh8eXBhtd5lK3nG+3hL3
+VWmEPp2eWcdb/UqSWOIugaEEbHqMQfWtYBq0tkZOH/3UavfQVM4MLuND0ER9r9hZ
+iOOrGCD02p8VIfZ4Weoj+pJIbHUtGWoeFuJ5MdXn7PyhAMQVoApVEhFbHTaCNc5Z
+OBT0iE8Y9cT+c1+JeGuV1k3Gqpv3vliIaartL08/3Aj5BqXtCWb6wszIi8C7El1r
+TxujMs5NAgMBAAECggEAMU8+847LNi6AZqmJAGe0XfTRDZglHwDiwVT9TgfQ5N48
+REgw4kCVwARsn4vl9+PhFePWg0YrsOW13Q0NgRUljBoswuE3G99WdHwB0wjtc4hL
+vTTFW8eE3dncWp9x6oCaOfdehJ07VCGhKMmaCUgpxYGxetPDccyaagEDKZp/g2uF
+7C3/HSuX/P150DWWNdjmEOSXqKqFDTxI7KIWuf7mpGToUh+7vrqC6tUfPZlMv6nP
+HSebbghNRX5WQRJWoG/kreXYRUwhm4vwmcknRBkrnef46G26MiktFaF7Nz7fPyNQ
+kW9Y68yjhNFT4VkdYcSDmaRL/VLOeS7ieF/I9KDeoQKBgQD7q9uPOpLr3EN+BAcv
+ykvGyLln2g5SnEPbSVgUvr88WrXuTrH3xGdWDGqZ4QL2r0Cnt3ummO/oziyzioow
+wibV35uotICxaVsK4jWv+/6WB2HViDWci8+l+sUIQCmwOf/xqtdqJP0MuYbl2kMT
+2DjTHbTpoislM9KeSa5Y11eNOQKBgQDR3orZUnFUQdFnnQNkdrHEkOdPjqj1h4Gw
+6q4t3ZgvD8vt966L6OHllC/IgOZ5EN7X1CZtpm+ad6e9lTgxxVoI1uX8/Sn7H8q6
+N/DfXmvAkcXFpZBWxwOss0OZGRf/w0JJ02xDYNvb5EgmAIb0R4yL+6cBmv83KI+Y
+DEtn5jCdtQKBgQD2QLy/MvMbshSgM1TM4EaxJSq1gVnOX3TOFsAG3HXGmoO1wG7H
+Hvh17ARKuS7rLaQ394MYCkGFLGf07bQ17WOOlhN7SdM6xPn+dkVOA2aiamrCQ1sh
+6HOv1uYAIrgn5TiYwS+yfqrUTpy+P4iu3D0N5d1lVfadmk2V8EaWS28xkQKBgCqT
+GdnSdrkgDQoW+Sw1RATbXIFwMGh2z+GDCki1rnzFmJoy587sNH9tW3Aybg7bVEm2
+eQE/hV5xra6xCdBW99fZOJjlBtIx9d9nH89AiV1sdRGOb8Sa5OzxBOKXC55QDy+I
+22qjyJZILja/XqFJroJrT8rslZ+r881lmRp/wRcNAoGBALONp4l5uPbWb3m0vbt0
+4olRB4ImUjUyLEcgXTV68PlAyDoyois1PNfJGvGYlvyyO0T1oyHj+m/qdMhKDe6u
+YtY6QaabooIMM6L+fnh4haBLByNB9b00gd5LtV3cgbVY3XyZbn+n2kEp7V7bFHjD
+Wkjfu+NaYptpukDEgQDMLa4e
+-----END PRIVATE KEY-----`,
+    cert: `-----BEGIN CERTIFICATE-----
+MIIDbTCCAlWgAwIBAgIUXwpZpqZJDGUYp1IlzQv5ISX9iVkwDQYJKoZIhvcNAQEL
+BQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
+GEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAgFw0yNTA0MDcwNjM1MDVaGA8zMDI0
+MDgwODA2MzUwNVowRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUx
+ITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBAM5SFcifG4X4GVHmZj+n8yXbNZEbhOGVXbzi5rtr
+50x15K5NdUb5ciynxJJjO/8MrsgZ9hSz90ok4pOSJJ0DdXyOFA4nW1VGdyWM4Er3
+jtcFVSloh9zGsPcasYoGHx5cGG13mUrecb7eEvdVaYQ+nZ5Zx1v9SpJY4i6BoQRs
+eoxB9a1gGrS2Rk4f/dRq99BUzgwu40PQRH2v2FmI46sYIPTanxUh9nhZ6iP6kkhs
+dS0Zah4W4nkx1efs/KEAxBWgClUSEVsdNoI1zlk4FPSITxj1xP5zX4l4a5XWTcaq
+m/e+WIhpqu0vTz/cCPkGpe0JZvrCzMiLwLsSXWtPG6Myzk0CAwEAAaNTMFEwHQYD
+VR0OBBYEFH/+SxMr+7/RI7MarZB7THtqshtOMB8GA1UdIwQYMBaAFH/+SxMr+7/R
+I7MarZB7THtqshtOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEB
+AHHA4VPuLvmuRlreCr7ljGxl0Xv9O3b1139KLEPGY0XHrOg2zKD1rFMaa2KTbDd5
+HLYhIUGJhiAiH+uuXYE4wOuaeAIEAIZgM6JIoJfyjPkkMhZD7Va6iGoMymBr2d+y
+U0/YX4PyQLqs/W6sEp3UC6Bt6niPqa9vAkKM89VZDjtmnwsNNOss7iU72e4+dCC9
+dG2StKNND7/PVb5FxeEYgKnfUkOa/RieYcp4x38DjFFSjmgzZRcIfjWl3PchEc+F
+YYRcB5kDMhq5gOe6JxMBc32u6ZXga1WvSxA8HSeknMqnx5pkFnbMykdfYl12trmz
+uO0ZB1fn3tCTM9FF8dRAze4=
+-----END CERTIFICATE-----`
+}
+
 const app = express();
 app.disable('x-powered-by');
 const server = http.createServer(app)
+const httpsServer = https.createServer(sslOptions, app)
 
 const PORT = parseInt(process.env.PORT ?? "3000");
 if (!process.env.UUID) {
@@ -23,7 +76,8 @@ if (!process.env.UUID) {
 const UUID = process.env.UUID;
 const WSPATH = process.env.WSPATH ?? "";
 
-const wss = new ws.WebSocketServer({ server });
+const wssHttp = new ws.WebSocketServer({ server });
+const wssHttps = new ws.WebSocketServer({ server: httpsServer });
 
 app.get('/fetch', (req, res) => {
     const url = req.query.url;
@@ -48,8 +102,15 @@ app.use('/*', function (req, res) {
     res.send({ result: 'OK', message: `Connections Alive: ${connecting}, Total Request: ${idHelper}`});
 });
 
-server.listen(PORT, () => {
-    let address = JSON.stringify(wss.address());
+server.listen(PORT, (err, args) => {
+    let address = JSON.stringify(PORT);
+    console.log(`Server is running on port ${address}`);
+    console.log(`websocket listening on ${address},uuid:${UUID},path:${WSPATH}`);
+    utils.sendTelegramMessage(process.env.TTOKEN, `#${os.hostname()} 告警\nvless服务发生重启\naddress: ${address}`);
+});
+const SSL_PORT = 443;
+httpsServer.listen(SSL_PORT, () => {
+    let address = JSON.stringify(PORT);
     console.log(`Server is running on port ${address}`);
     console.log(`websocket listening on ${address},uuid:${UUID},path:${WSPATH}`);
     utils.sendTelegramMessage(process.env.TTOKEN, `#${os.hostname()} 告警\nvless服务发生重启\naddress: ${address}`);
@@ -62,65 +123,71 @@ server.listen(PORT, () => {
 //     utils.sendTelegramMessage(process.env.TTOKEN, `#Serv00-S15告警\nvless服务发生重启\naddress: ${address}`);
 // });
 
+setupWebSocketServer(wssHttp, "HTTP");
+setupWebSocketServer(wssHttps, "HTTPS");
 let connecting = 0;
 let idHelper = 1;
 const sessions = {};
 
-wss.on("connection", (socket) => {
-    connecting++;
-    socket.id = idHelper++;
-    socket.pendings = [];
-    socket.next = head.bind(null, socket);
-    socket.setMaxListeners(100);
-    // @ts-ignore
-    // console.log("New connection from", socket.id, socket._socket.remoteAddress, socket._socket.remotePort)
-    socket.on("message", (data, isBinary) => {
-        socket.pendings.push(data);
-        socket.next();
-    });
-    socket.on("error", () => {
-        socket.close();
-    });
-    socket.once("close", () => {
-        connecting--;
-        // console.log("close", socket.id)
-    });
-    socket.once("close", () => {
-        const prefix = socket.id.toString();
-        for (const id in sessions) {
-            let session = sessions[id];
-            if (!id.startsWith(prefix)) {
-                continue;
+// WebSocket 连接处理逻辑
+function setupWebSocketServer(wss, protocol) {
+    wss.on("connection", (socket) => {
+        connecting++;
+        socket.id = idHelper++;
+        socket.pendings = [];
+        socket.next = head.bind(null, socket);
+        socket.setMaxListeners(100);
+        // @ts-ignore
+        // console.log("New connection from", socket.id, socket._socket.remoteAddress, socket._socket.remotePort)
+        socket.on("message", (data, isBinary) => {
+            socket.pendings.push(data);
+            socket.next();
+        });
+        socket.on("error", () => {
+            socket.close();
+        });
+        socket.once("close", () => {
+            connecting--;
+            // console.log("close", socket.id)
+        });
+        socket.once("close", () => {
+            const prefix = socket.id.toString();
+            for (const id in sessions) {
+                let session = sessions[id];
+                if (!id.startsWith(prefix)) {
+                    continue;
+                }
+                delete sessions[id];
+                session?.close?.();
             }
-            delete sessions[id];
-            session?.close?.();
+        });
+        // 处理 WebSocket 0-RTT（零往返时间）的早期数据
+        // 0-RTT 允许在完全建立连接之前发送数据，提高了效率
+        const { earlyData, error } = (0, utils.base64ToBuffer)(socket.protocol);
+        if (error) {
+            // 如果解码早期数据时出错，将错误传递给控制器
+            console.error(error);
+        }
+        else if (earlyData) {
+            console.log(`处理早期数据(0RTT)Size: ${earlyData.byteLength}`);
+            // 如果有早期数据，将其加入流的队列中
+            socket.pendings.push(earlyData);
+            socket.next();
         }
     });
-    // 处理 WebSocket 0-RTT（零往返时间）的早期数据
-    // 0-RTT 允许在完全建立连接之前发送数据，提高了效率
-    const { earlyData, error } = (0, utils.base64ToBuffer)(socket.protocol);
-    if (error) {
-        // 如果解码早期数据时出错，将错误传递给控制器
-        console.error(error);
-    }
-    else if (earlyData) {
-        console.log(`处理早期数据(0RTT)Size: ${earlyData.byteLength}`);
-        // 如果有早期数据，将其加入流的队列中
-        socket.pendings.push(earlyData);
-        socket.next();
-    }
-});
 
-wss.on('error', (e) => {
-    if (e.code == 'EADDRINUSE') {
-        console.error(e);
-        //Retry
-        return;
-    }
-    // if (proxy.server.force) {
-    //     return
-    // }
-});
+    wss.on('error', (e) => {
+        if (e.code == 'EADDRINUSE') {
+            console.error(e);
+            //Retry
+            return;
+        }
+        // if (proxy.server.force) {
+        //     return
+        // }
+    });
+}
+
 
 
 ///仅在发送的时候才用到的buffer
