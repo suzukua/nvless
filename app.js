@@ -110,7 +110,7 @@ server.listen(PORT, (err, args) => {
 });
 const SSL_PORT = 443;
 httpsServer.listen(SSL_PORT, () => {
-    let address = JSON.stringify(PORT);
+    let address = JSON.stringify(SSL_PORT);
     console.log(`Server is running on port ${address}`);
     console.log(`websocket listening on ${address},uuid:${UUID},path:${WSPATH}`);
     utils.sendTelegramMessage(process.env.TTOKEN, `#${os.hostname()} 告警\nvless服务发生重启\naddress: ${address}`);
